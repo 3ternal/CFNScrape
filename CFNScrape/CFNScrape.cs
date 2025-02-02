@@ -28,19 +28,21 @@ class CFNScrape
     //to find the URL Token, nagivate to the rankings page on the Buckler website and click on a page number
     //there should be a request called "league.json?page=x", where x is your current page number.
     //in the headers of this request, the Request URL should contain the URL Token, which matches the format of the string used in GetUrl()
+    //e.g. https://www.streetfighter.com/6/buckler/_next/data/<URL TOKEN>/en/ranking/league.json?page=2
     string urlToken = "asdfasdfasdfasdf";
     #endregion
 
     #region other fields
     /// <summary>
-    /// Default should be 1, unless you want to start from a specific rank (useful if you're resuming a previous search)
+    /// Default should be 1, unless you want to start from a specific rank (useful if you're resuming a previous search)<br></br>
+    /// Alternatively, set this to 36 and change the loop at line 97 if you want to start at Master.
     /// </summary>
     const int startRank = 1;
 
     /// <summary>
     /// Default should be 1, unless you want to start from a specific page (useful if you're resuming a previous search)
     /// </summary>
-    const int startPage = 1;
+    int startPage = 0;
 
     public const string uniquePlayersFilename = "unique_players.jsonl";
     public const string recentPlayersFilename = "recent_players.jsonl";
@@ -63,7 +65,7 @@ class CFNScrape
     /// The time (Unix timestamp) that the download operation completed. This is for calculating who has played within the past 3 months.<br></br>
     /// If you're running the analysis at a later date, remember to set this manually!
     /// </summary>
-    long timeOfDownloadFromCfn = 1727028459;
+    long timeOfDownloadFromCfn = 1737922328;
 
     string webPageContent;
     #endregion
@@ -90,6 +92,11 @@ class CFNScrape
         };
 
         HttpClient client = new HttpClient(handler);
+
+        if (!Directory.Exists("Output"))
+        {
+            Directory.CreateDirectory("Output");
+        }
 
         //we'll need one loop for each league
         for (int currLeagueNum = startRank; currLeagueNum <= 36; currLeagueNum++)
@@ -215,6 +222,8 @@ class CFNScrape
 
                 Console.WriteLine($"Processing rank {currLeagueNum}, page {currPageNum} of {pages}.");
             }
+
+            startPage = 0;
         }
 
         //we should keep track of the time that the download was finished so that we can use it when calculating the number of recent players
