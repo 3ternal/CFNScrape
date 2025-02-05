@@ -37,7 +37,7 @@ class CFNScrape
     /// Default should be 1, unless you want to start from a specific rank (useful if you're resuming a previous search)<br></br>
     /// Alternatively, set this to 36 and change the loop at line 97 if you want to start at Master.
     /// </summary>
-    const int startRank = 1;
+    const int startRank = 35;
 
     /// <summary>
     /// Default should be 1, unless you want to start from a specific page (useful if you're resuming a previous search)
@@ -220,7 +220,7 @@ class CFNScrape
                     File.AppendAllText(filename, jsonStr);
                 }
 
-                Console.WriteLine($"Processing rank {currLeagueNum}, page {currPageNum} of {pages}.");
+                Console.WriteLine($"Processing rank {currLeagueNum} ({LeagueNumberToName(currLeagueNum)}), page {currPageNum} of {pages}.");
             }
 
             startPage = 0;
@@ -395,6 +395,8 @@ class CFNScrape
             return;
         }
 
+        Console.WriteLine("\nSearching for recent players...\n");
+
         List<PlayerData> recentPlayers = new List<PlayerData>();
 
         //read the list of all unique players
@@ -407,9 +409,14 @@ class CFNScrape
 
             //how long has it been since the user played?
             long timeSinceLastPlayed = timeOfDownloadFromCfn - player.lastPlayedAtUnixTime;
+            
+            //this can go into the negatives if it took us a few days to download the data from CFN, and if the person played again after the time of download
             if (timeSinceLastPlayed < 0)
+                timeSinceLastPlayed = 0;
+
+            if (timeOfDownloadFromCfn < 0)
             {
-                throw new Exception($"You might have forgotten to set timeOfDownloadFromCfn\nRanks scraped from CFN at {timeOfDownloadFromCfn}\n" +
+                throw new Exception($"You forgot to set timeOfDownloadFromCfn\nRanks scraped from CFN at {timeOfDownloadFromCfn}\n" +
                     $"{player.username} ({player.userId}) last played at {player.lastPlayedAtUnixTime}");
             }
 
